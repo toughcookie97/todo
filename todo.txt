@@ -1,0 +1,194 @@
+<html lang="en">
+
+<head>
+
+  <meta charset="UTF-8">
+
+  <title>Title</title>
+
+ 
+
+  <script src="https://cdn.bootcss.com/vue/2.5.16/vue.js"></script>
+
+  <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+
+</head>
+
+ 
+
+<body>
+
+ 
+
+<div id="app">
+
+  <h1>Todo List</h1>
+
+  <ul>
+
+    <li v-for="(item, index) in items" :key="index">{{ item }}</li>
+
+  </ul>
+
+ 
+
+  <input type="text" v-model="item">
+
+  <button @click="postApi">button</button>
+
+</div>
+
+ 
+
+<script>
+
+  new Vue({
+
+    el: '#app',
+
+    data: {
+
+      items: [],
+
+      item: ''
+
+    },
+
+    created () {
+
+      axios.get('http://localhost:3000/')
+
+        .then(response => {
+
+          this.items = response.data
+
+        })
+
+        .catch(function (error) {
+
+          console.log(error)
+
+        })
+
+    },
+
+    methods: {
+
+      postApi () {
+
+        axios.post('http://localhost:3000/', {
+
+          item: this.item
+
+        })
+
+          .then(response => {
+
+            this.items = response.data
+
+          })
+
+          .catch(function (error) {
+
+            console.log(error)
+
+          })
+
+      }
+
+    }
+
+  })
+
+</script>
+
+</body>
+
+</html>
+
+
+var http = require('http')
+
+ 
+
+var items = []
+
+ 
+
+http.createServer(function(req, res) {
+
+  
+
+  res.setHeader('Access-Control-Allow-Origin', '*')
+
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type')
+
+  res.setHeader('Content-Type', 'application/json')
+
+ 
+
+  switch (req.method) {
+
+    
+
+    // post请求时，浏览器会先发一次options请求，如果请求通过，则继续发送正式的post请求
+
+    case 'OPTIONS':
+
+      res.statusCode = 200
+
+      res.end()
+
+      break
+
+ 
+
+    case 'GET':
+
+      let data = JSON.stringify(items)
+
+      res.write(data)
+
+      res.end()
+
+      break
+
+ 
+
+    case 'POST':
+
+      let item = ''
+
+      req.on('data', function (chunk) {
+
+        item += chunk
+
+      })
+
+      req.on('end', function () {
+
+        
+
+        item = JSON.parse(item)
+
+        items.push(item.item)
+
+        
+
+        let data = JSON.stringify(items)
+
+        res.write(data)
+
+        res.end()
+
+      })
+
+      break
+
+  }
+
+}).listen(3000)
+
+ 
+
+console.log('http server is start...')
